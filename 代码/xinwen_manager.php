@@ -1,0 +1,99 @@
+<?php
+    include 'conn.php';
+    include 'header.php';
+
+    $user_id=$_GET['id'];
+if($user_id==null) {
+    echo '<script>';
+    echo 'window.location.href = "denglu.php";';
+    echo '</script>';
+}
+?>
+
+<style>
+    .tb{
+        text-align: center;
+        margin-top: 30px;
+    }
+
+    .tb_top{
+       line-height:50px;
+       border-bottom:2px solid black;
+    }
+
+    td{
+        line-height: 50px;
+    }
+    .nr_btn{
+        position: fixed;
+        bottom: 20px;
+        left: 350px;
+        width: 70%;
+        text-align: center;
+    }
+
+</style>
+
+<div class="nr">
+        <div class="nr_top">
+            <h1>新闻管理界面</h1>
+        </div>
+        <div>
+        <table width="100%" class="tb">
+            <tr class="tb_top">
+                <th>新闻ID</th>
+                <th>新闻标题</th>
+                <th>新闻类别</th>
+                <th>发布时间</th>
+                <th>操作</th>
+                <!-- <th><a href="#">编辑</a>|<a href="#">删除</a></th> -->
+            </tr>
+        
+            <?php
+               
+                // 获取当前页数
+                $page = isset($_GET['page']) ? $_GET['page'] : 1;
+
+                // 计算LIMIT和OFFSET参数  
+                $limit = 10;
+                $offset = ($page - 1) * $limit;
+
+                // 查询新闻和标签信息
+                $sql = "SELECT xinwen.ID AS ID,xinwen.Name AS title, biaoqian.Name AS category, xinwen.UpTime AS time, biaoqian.ID AS tag_id
+                FROM xinwen
+                INNER JOIN biaoqian ON xinwen.biaoqian_id = biaoqian.ID
+                LIMIT $limit OFFSET $offset";
+                $result = mysqli_query($con, $sql);
+
+                if($result){
+
+                while ($row = mysqli_fetch_assoc($result)) {
+                    echo '<tr>';
+                    echo '<td>' . $row['ID'] . '</td>';
+                    echo '<td>' . $row['title'] . '</td>';
+                    echo '<td>' . $row['category'] . '</td>';
+                    echo '<td>' . $row['time'] . '</td>';
+                    echo '<td><a href="xinwen_update.php?id='.$_GET['id'].' & xinwen_id='.$row['ID'].'">编辑</a>|<a href="xinwen_del.php?id='.$_GET['id'].' & xinwen_id='.$row['ID'].'">删除</a></td>';
+                    echo '</tr>';
+                    }
+                }else {echo "出错啦！".$sql;}
+            ?>
+        </table>
+    </div>
+    <?php
+               $sql = "SELECT COUNT(*) AS total FROM xinwen";
+               $result = mysqli_query($con, $sql);
+               $row = mysqli_fetch_assoc($result);
+               $total = $row['total'];
+               $pagesum = ceil($total / $limit);
+            ?>    
+            <div class="nr_btn">
+                <p>总共有<?php echo $pagesum;?>页，当前 第<?php echo $page;?> 页。</p><hr>
+                <a href="?id=<?php echo $_GET['id']?>& page=1">首页</a>&nbsp;
+                <a href="?id=<?php echo $_GET['id']?>& page=<?php echo (($page>1)?($page-1):1)?>">上一页</a> &nbsp;
+                <a href="?id=<?php echo $_GET['id']?>& page=<?php echo (($page<$pagesum)?($page+1):$pagesum);?>">下一页
+                </a> &nbsp;
+                <a href="?id=<?php echo $_GET['id']?>&page=<?php echo $pagesum?>">尾页</a>
+            </div>
+    
+</div>
